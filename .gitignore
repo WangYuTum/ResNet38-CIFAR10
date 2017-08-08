@@ -1,0 +1,12 @@
+# MAC OS
+.DS_Store
+
+# Python compiled
+*.pyc
+
+# IPython Notebook
+.ipynb_checkpoints
+.ipynb
+
+# Any folders
+data/
