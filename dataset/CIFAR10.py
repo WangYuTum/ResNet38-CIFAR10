@@ -1,4 +1,7 @@
-'''This script processes row CIFAR10 dataset into desired batched images.'''
+'''Author: Yu Wang(wangyu@in.tum.de)
+   LICENSE: Open source.
+   This script processes row CIFAR10 dataset into desired batched images.
+   '''
 from __future__ import print_function
 
 # from PIL import Image
