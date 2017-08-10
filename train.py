@@ -88,6 +88,6 @@ with tf.Session(config=config_gpu) as sess:
                 save_path = save_path + save_name
                 np.save(save_path, save_npy)
         # Shuffle dataset
-        train_dataset.shuffle()
+        dataset.shuffle()
 
 
