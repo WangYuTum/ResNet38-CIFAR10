@@ -111,6 +111,16 @@ class CIFAR10():
 
         return image_pool, label_pool
 
+    def get_val_batch(self):
+        '''Return a set of random images from validation set '''
+
+        sample_indices = random.sample(xrange(5000), self._batch_size)
+
+        next_batch_image = np.take(self._ValImageSet, sample_indices, axis=0)
+        next_batch_label = np.take(self._ValLabelSet, sample_indices, axis=0)
+
+        return next_batch_image, next_batch_label
+
     def _split(self):
         '''Split traning pool into TrainSet(45k) and ValSet(5k), randomly pick 5k images for ValSet'''
 

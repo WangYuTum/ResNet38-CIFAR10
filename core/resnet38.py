@@ -1,12 +1,13 @@
-from __future__ import absolute_import
+#from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import nn
 import tensorflow as tf
 import numpy as np
 
+import nn
 import sys
+import os
 sys.path.append("..")
 import data_utils as dt
 
@@ -16,13 +17,12 @@ class ResNet38:
         self._var_dict = {}
         self._num_classes = 10
 
-    def _build_model(self, image, num_classes, is_train=False):
+    def _build_model(self, image, is_train=False):
         '''If is_train, save weight to self._var_dict,
            otherwise, don't save weights'''
 
         model = {}
         feed_dict = self._weight_dict
-        self._num_classes = num_classes
         if is_train:
             var_dict = self._var_dict
         else:
@@ -53,10 +53,9 @@ class ResNet38:
         # B2_2, B2_3: [H/2, W/2, 128]
         for i in range(2):
             with tf.variable_scope('B2_'+str(i+2)):
-                model['B2_'+str(i+2)] =
-                nn.ResUnit_2convs(model['B2_'+str(i+1)], feed_dict,
-                                  shape_dict['B2']['convs'][1],
-                                  var_dict=var_dict)
+                model['B2_'+str(i+2)] = nn.ResUnit_2convs(model['B2_'+str(i+1)], feed_dict,
+                                                          shape_dict['B2']['convs'][1],
+                                                          var_dict=var_dict)
 
         # B3_1: [H/2, W/2, 128] -> [H/4, W/4, 256]
         shape_dict['B3'] = {}
@@ -70,10 +69,9 @@ class ResNet38:
         # B3_2, B3_3: [H/4, W/4, 256]
         for i in range(2):
             with tf.variable_scope('B3_'+str(i+2)):
-                model['B3_'+str(i+2)] =
-                nn.ResUnit_2convs(model['B3_'+str(i+1)], feed_dict,
-                                  shape_dict['B3']['convs'][1],
-                                  var_dict=var_dict)
+                model['B3_'+str(i+2)] = nn.ResUnit_2convs(model['B3_'+str(i+1)], feed_dict,
+                                                          shape_dict['B3']['convs'][1],
+                                                          var_dict=var_dict)
         # B4_1: [H/4, W/4, 256] -> [H/8, W/8, 512]
         shape_dict['B4'] = {}
         shape_dict['B4']['side'] = [1,1,256,512]
@@ -149,8 +147,7 @@ class ResNet38:
 
         l2_losses = []
         for var in tf.trainable_variables():
-            if var.op.name.find('kernel') or var.op.name.find('fc_weight') or
-            var.op.name.find('fc_bias'):
+            if var.op.name.find('kernel') or var.op.name.find('fc_weight') or var.op.name.find('fc_bias'):
                 l2_losses.append(tf.nn.l2_loss(var))
 
         return tf.multiply(decay_rate, tf.add_n(l2_losses))
@@ -160,17 +157,16 @@ class ResNet38:
                   Label [batch_size]
                   params: 'num_class', 'batch_size', 'decay_rate' '''
 
-        model = self._build_model(image, params['num_class'], is_train=True)
+        model = self._build_model(image, is_train=True)
         prediction = model['fc_out']
         label = tf.reshape(label, [params['batch_size']])
 
         # compute train accuracy
         pred_label = tf.argmax(tf.nn.softmax(prediction), axis=1)
         correct_pred_bools = tf.equal(pred_label, label)
-        correct_preds = tf.reduce_sum(tf.cast(correct_preds, tf.float32))
+        correct_preds = tf.reduce_sum(tf.cast(correct_pred_bools, tf.float32))
         train_acc = correct_preds/params['batch_size']
-        entropy_loss =
-        tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label,
+        entropy_loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=label,
                                                                       logits=prediction))
         total_loss = entropy_loss + self._weight_decay(params['decay_rate'])
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)

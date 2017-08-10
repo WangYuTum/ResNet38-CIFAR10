@@ -169,7 +169,7 @@ def ResUnit_tail(input_tensor, feed_dict, shape_dict, var_dict=None):
 
     # The batch norm layer
     BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
-                 'bn1', is_train=is_train,
+                 bn_scope='bn1', is_train=is_train,
                  shape=shape_dict, var_dict=var_dict)
     RELU_out1 = ReLu_layer(BN_out1)
 
@@ -278,14 +278,13 @@ def get_conv_kernel(feed_dict, shape):
 
     scope_name = tf.get_variable_scope().name
     if not feed_dict.has_key(scope_name):
-        print('No matched kernel for %s, randomly initialize with shape
-              %'%(scope_name, str(shape)))
+        print('No matched kernel for %s, randomly initialize with shape %s'%(scope_name, str(shape)))
         init = tf.truncated_normal_initializer(stddev=0.001)
     else:
         init_val = feed_dict[scope_name]['kernel']
         shape = init_val.shape
-        print('Load kernel with shape %s'str(shape))
-        init = tf.constant_initializer(value=init_value)
+        print('Load kernel with shape %s'%str(shape))
+        init = tf.constant_initializer(value=init_val)
     var = tf.get_variable(name='kernel', initializer=init, shape=shape)
 
     return var
@@ -302,8 +301,7 @@ def get_bn_params(feed_dict, shape):
 
     scope_name = tf.get_variable_scope().name
     if not feed_dict.has_key(scope_name):
-        print('No matched BN params %s, randomly initialize BN params with
-              shape %s'%(scope_name, str(shape)))
+        print('No matched BN params %s, randomly initialize BN params with shape %s'%(scope_name, str(shape)))
         init_beta = tf.zeros_initializer()
         init_mean = tf.zeros_initializer()
         init_gamma = tf.ones_initializer()
@@ -313,7 +311,7 @@ def get_bn_params(feed_dict, shape):
         gamma = feed_dict[scope_name]['gamma']
         moving_mean = feed_dict[scope_name]['moving_mean']
         moving_var = feed_dict[scope_name]['moving_var']
-        print('Load BN params % with shape %'%(scope_name, str(shape)))
+        print('Load BN params %s with shape %s'%(scope_name, str(shape)))
         init_beta = tf.constant_initializer(value=beta)
         init_gamma = tf.constant_initializer(value=gamma)
         init_mean = tf.constant_initializer(value=moving_mean)
@@ -326,7 +324,7 @@ def Global_avg_pool(input_tensor):
 
     mean_out = tf.reduce_mean(input_tensor, [1,2])
 
-    return input_tensor
+    return mean_out
 
 def FC(input_tensor, batch_size, feed_dict, num_class, var_dict=None):
     '''Fully connected layer'''
@@ -334,7 +332,7 @@ def FC(input_tensor, batch_size, feed_dict, num_class, var_dict=None):
     scope_name = tf.get_variable_scope().name
     print('Layer name: %s'%scope_name)
     input_tensor = tf.reshape(input_tensor, [batch_size,-1])
-    fc_weight = get_fc_weight(feed_dict, [tf.shape(input_tensor)[1], num_class])
+    fc_weight = get_fc_weight(feed_dict, [4096, num_class])
     fc_bias = get_fc_bias(feed_dict, [num_class])
 
     fc_out = tf.nn.xw_plus_b(input_tensor, fc_weight, fc_bias)
@@ -351,14 +349,13 @@ def get_fc_weight(feed_dict, shape):
 
     scope_name = tf.get_variable_scope().name
     if not feed_dict.has_key(scope_name):
-        print('No matched fc_weight for %s, randomly initialize with shape
-              %'%(scope_name, str(shape)))
+        print('No matched fc_weight for %s, randomly initialize with shape %s'%(scope_name, str(shape)))
         init = tf.truncated_normal_initializer(stddev=0.001)
     else:
         init_val = feed_dict[scope_name]['fc_weight']
         shape = init_val.shape
-        print('Load fc_weight with shape %s'str(shape))
-        init = tf.constant_initializer(value=init_value)
+        print('Load fc_weight with shape %s'%str(shape))
+        init = tf.constant_initializer(value=init_val)
     var = tf.get_variable(name='fc_weight', initializer=init, shape=shape)
 
     return var
@@ -367,8 +364,7 @@ def get_fc_bias(feed_dict, shape):
 
     scope_name = tf.get_variable_scope().name
     if not feed_dict.has_key(scope_name):
-        print("No matched fc_bias %s, randomly initialize the bias with shape: %s
-              " % (scope_name, str(shape)))
+        print("No matched fc_bias %s, randomly initialize the bias with shape: %s" % (scope_name, str(shape)))
         init = tf.constant_initializer(0.1)
     else:
         init_val = feed_dict[scope_name]['fc_bias']
@@ -378,10 +374,3 @@ def get_fc_bias(feed_dict, shape):
     var = tf.get_variable(name="fc_bias", initializer=init, shape=shape)
 
     return var
-
-
-
-
-
-
-
