@@ -28,11 +28,15 @@ class CIFAR10():
         self._TestImageSet = None
         self._TestLabelSet = None
         self._batch_index = 0
-        self._total_batches = 45000 / self._batch_size
+        # Use full training set
+        self._total_batches = 50000 / self._batch_size
+        # self._total_batches = 45000 / self._batch_size
 
         # Split Training set and Validation set in Train Pool
         # Train set 45k, Validation set 5k
-        self._split()
+        # Don't split if use full training set
+        # self._split()
+        self._TrainImageSet , self._TrainLabelSet = self._get_TrainPool()
         self._check_shape()
         self._print_info()
 
@@ -137,8 +141,10 @@ class CIFAR10():
     def shuffle(self):
         '''Shuffle the Train Set 45k images and the corresponding labels'''
 
-        sample_indices = np.random.permutation(45000)
-
+        # if use split 45000, 5000
+        # sample_indices = np.random.permutation(45000)
+        # if use full train set 50000
+        sample_indices = np.random.permutation(50000)
         self._TrainImageSet = np.take(self._TrainImageSet, sample_indices, axis=0)
         self._TrainLabelSet = np.take(self._TrainLabelSet, sample_indices, axis=0)
 
@@ -151,9 +157,12 @@ class CIFAR10():
             next_batch_label = self._TrainLabelSet[self._batch_index * self._batch_size: (self._batch_index + 1) * self._batch_size]
             self._batch_index += 1
         else:
-            first_part_image = self._TrainImageSet[self._batch_index * self._batch_size: 45000]
-            first_part_label = self._TrainLabelSet[self._batch_index * self._batch_size: 45000]
-            residul_num = self._batch_size - (45000 - self._batch_index * self._batch_size)
+            # if use split
+            # full_size = 45000
+            full_size = 50000
+            first_part_image = self._TrainImageSet[self._batch_index * self._batch_size: full_size]
+            first_part_label = self._TrainLabelSet[self._batch_index * self._batch_size: full_size]
+            residul_num = self._batch_size - (full_size - self._batch_index * self._batch_size)
             second_part_image = self._TrainImageSet[0: residul_num]
             second_part_label = self._TrainLabelSet[0: residul_num]
             next_batch_image = np.concatenate((first_part_image, second_part_image),axis=0)
@@ -185,12 +194,12 @@ class CIFAR10():
         try:
             if np.shape(self._TrainImageSet)[0] != np.shape(self._TrainLabelSet)[0]:
                 flag = True
-            if np.shape(self._TrainImageSet)[0] != 45000:
+            if np.shape(self._TrainImageSet)[0] != 50000:
                 flag = True
-            if np.shape(self._ValImageSet)[0] != np.shape(self._ValLabelSet)[0]:
-                flag = True
-            if np.shape(self._ValImageSet)[0] != 5000:
-                flag = True
+            # if np.shape(self._ValImageSet)[0] != np.shape(self._ValLabelSet)[0]:
+            #    flag = True
+            # if np.shape(self._ValImageSet)[0] != 5000:
+            #    flag = True
             if np.shape(self._TestImageSet)[0] != np.shape(self._TestLabelSet)[0]:
                 flag = True
             if np.shape(self._TestImageSet)[0] != 10000:
