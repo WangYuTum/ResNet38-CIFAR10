@@ -37,6 +37,7 @@ class CIFAR10():
         # Don't split if use full training set
         # self._split()
         self._TrainImageSet , self._TrainLabelSet = self._get_TrainPool()
+        self._TestImageSet, self._TestLabelSet = self._TestImagePool, self._TestLabelPool = self._get_TestPool()
         self._check_shape()
         self._print_info()
 
@@ -181,10 +182,11 @@ class CIFAR10():
         '''Print necessary info about the CIFAR10 dataset after initialized'''
 
         print('Loaded dataset %s:'%self._data_path)
-        print('Training Set {0}, Validation Set {1}, Test Set {2}'.format(np.shape(self._TrainImageSet)[0], np.shape(self._ValImageSet)[0], np.shape(self._TestImageSet)[0]))
+        # print('Training Set {0}, Validation Set {1}, Test Set {2}'.format(np.shape(self._TrainImageSet)[0], np.shape(self._ValImageSet)[0], np.shape(self._TestImageSet)[0]))
+        print('Training Set {0}, Test Set {1}'.format(np.shape(self._TrainImageSet)[0], np.shape(self._TestImageSet)[0]))
         print('Shape:')
         print('Training Set: {0}, Label {1}'.format(np.shape(self._TrainImageSet), np.shape(self._TrainLabelSet)))
-        print('Validation Set: {0}, Label {1}'.format(np.shape(self._ValImageSet), np.shape(self._ValLabelSet)))
+        # print('Validation Set: {0}, Label {1}'.format(np.shape(self._ValImageSet), np.shape(self._ValLabelSet)))
         print('Test Set: {0}, Label {1}'.format(np.shape(self._TestImageSet), np.shape(self._TestLabelSet)))
 
     def _check_shape(self):
