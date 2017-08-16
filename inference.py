@@ -13,12 +13,12 @@ config_gpu = tf.ConfigProto()
 config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.95
 
 train_data_params = {'data_path': 'data/cifar-10-batches-py/',
-                     'batch_size': 125,
+                     'batch_size': 250,
                      'mode': 'Test'}
 dataset = dt.CIFAR10(train_data_params)
 
-params = {'batch_size': 125,
-          'feed_path': 'data/saved_weights/CIFAR10_ResNet38_271.npy'}
+params = {'batch_size': 250,
+          'feed_path': 'data/saved_weights/CIFAR10_ResNet38_151.npy'}
 
 with tf.Session() as sess:
 #with tf.Session(config=config_gpu) as sess:
@@ -31,7 +31,7 @@ with tf.Session() as sess:
     test_label = tf.placeholder(tf.int64, shape=[batch_size])
 
     # 10000 / 125 = 80 iters
-    [correct_preds] = res38.inf(image=test_img, label=test_label, params=params)
+    correct_preds = res38.inf(image=test_img, label=test_label, params=params)
 
     init = tf.global_variables_initializer()
     sess.run(init)
@@ -43,7 +43,7 @@ with tf.Session() as sess:
         print('iter %d'%iters)
         next_images, next_labels = dataset.next_batch()
         test_feed_dict = {test_img: next_images, test_label: next_labels}
-        [correct_preds_] = sess.run(correct_preds, test_feed_dict)
+        correct_preds_ = sess.run(correct_preds, test_feed_dict)
         num_correct += correct_preds_
     acc = num_correct / 10000.0
     print('Test acc is %f'%acc)

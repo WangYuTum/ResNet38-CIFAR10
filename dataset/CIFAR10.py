@@ -177,7 +177,7 @@ class CIFAR10():
         else:
             # if use split
             # full_size = 45000
-            if self._mode = 'Train':
+            if self._mode == 'Train':
                 full_size = 50000
             else:
                 full_size = 10000
