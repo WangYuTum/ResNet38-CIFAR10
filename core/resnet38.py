@@ -176,4 +176,18 @@ class ResNet38:
 
         return train_op, total_loss, train_acc, correct_preds
 
+    def inf(self, image, label, params):
+        '''Input: Image [batch_size, H, W, C]
+                  Label [batch_size]
+                  params: 'batch_size', 'feed_path' '''
+
+        model = self._build_model(image, is_train=False)
+        prediction = model['fc_out']
+        label = tf.reshape(label, [params['batch_size']])
+
+        pred_label = tf.argmax(tf.nn.softmax(prediction), axis=1)
+        correct_pred_bools = tf.equal(pred_label, label)
+        correct_preds = tf.reduce_sum(tf.cast(correct_pred_bools, tf.float32))
+
+        return correct_preds
 
