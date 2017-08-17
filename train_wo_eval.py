@@ -47,7 +47,7 @@ with tf.Session(config=config_gpu) as sess:
     Train_summary = tf.summary.merge_all()
     # Val_summary = tf.summary.merge([ValLoss_sum, ValAcc_sum])
 
-    writer = tf.summary.FileWriter(params['tsboard_save_path']+'without_split', sess.graph)
+    writer = tf.summary.FileWriter(params['tsboard_save_path']+'without_split_aug', sess.graph)
     init = tf.global_variables_initializer()
     sess.run(init)
 
@@ -67,10 +67,11 @@ with tf.Session(config=config_gpu) as sess:
             save_npy = sess.run(save_dict_op)
             save_path = params['save_path']
             if len(save_npy.keys()) != 0:
-                save_name = 'CIFAR10_ResNet38_%d.npy'%(epoch+1)
+                save_name = 'CIFAR10_ResNet38_%d_aug.npy'%(epoch)
                 save_path = save_path + save_name
                 np.save(save_path, save_npy)
-        # Shuffle dataset
+        # Shuffle and flip dataset
         dataset.shuffle()
+        dataset.flip()
 
 

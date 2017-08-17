@@ -90,6 +90,56 @@ class CIFAR10():
 
         return images, label_data
 
+    def _per_image_standardization(self, image):
+        '''Input image: [1, H, W, 3] or [H, W, 3]'''
+
+        # shape check
+        if np.ndim(image) == 4 and np.shape(image)[0] != 1:
+            sys.exit('Per Image Standardization shape error!')
+        else:
+            image = np.reshape(image, (32,32,3))
+        # Standardization
+        image = image.astype(np.int64)
+        image_shape = np.shape(image)
+        image_mean = np.mean(image)
+        num_elements = image_shape[0] * image_shape[1] * image_shape[2]
+        variance = np.mean(np.square(image)) - np.square(image_mean)
+        variance = np.maximum(variance, 0.0)
+        stddev = np.sqrt(variance)
+        min_stddev = np.sqrt(num_elements)
+        value_scale = np.maximum(min_stddev, stddev)
+        value_offset = image_mean
+
+        normed_image = np.subtract(image, value_offset)
+        normed_image = np.divide(normed_image, value_scale)
+
+        return normed_image
+
+    def _batch_image_standardization(self, batch_image):
+        '''Input batch: [N, H, W, 3]'''
+
+        # shape check
+        if np.ndim(image) != 4:
+            sys.exit('Batch Image Standardization shape error!')
+        # Standardization
+        batch_image = batch_image.astype(np.int64)
+        batch_shape = np.shape(batch_image)
+        num_elements = batch_shape[1] * batch_shape[2] * batch_shape[3]
+        image_means = np.mean(batch_image, axis=(1,2,3))
+        variances = np.mean(np.square(batch_image), axis=(1,2,3)) - np.square(image_means)
+        variances = np.maximum(variances, 0.0)
+        stddevs = np.sqrt(variances)
+        min_stddevs = np.sqrt(num_elements)
+        value_scales = np.maximum(min_stddevs, stddevs)
+        value_offsets = image_means
+
+        normed_batch = np.reshape(batch_image, (batch_shape[0], num_elements))
+        normed_batch = np.subtract(normed_batch, np.reshape(value_offsets, (batch_shape(0),1)))
+        normed_batch = np.divide(normed_batch, np.reshape(value_scales ,(batch_shape(0),1)))
+        normed_batch = np.reshape(normed_batch, (batch_shape[0], batch_shape[1], batch_shape[2], batch_shape[3]))
+
+        return normed_batch
+
     def _get_TrainPool(self):
         '''Generate TrainImagePool and TrainLabelPool'''
 
@@ -155,6 +205,11 @@ class CIFAR10():
         self._TrainImageSet = np.take(self._TrainImageSet, sample_indices, axis=0)
         self._TrainLabelSet = np.take(self._TrainLabelSet, sample_indices, axis=0)
 
+    def flip(self):
+        '''Horizontally flip all images'''
+
+        self._TrainImageSet = self._TrainImageSet[:,:,::-1]
+
     def next_batch(self):
 
         if self._mode == 'Train':
@@ -190,6 +245,7 @@ class CIFAR10():
             next_batch_label = np.concatenate((first_part_label, second_part_label),axis=0)
             # reset index to 0
             self._batch_index = 0
+        next_batch_image = self._batch_image_standardization(next_batch_image)
 
         return next_batch_image, next_batch_label
 
