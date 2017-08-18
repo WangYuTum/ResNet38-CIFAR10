@@ -157,7 +157,12 @@ class ResNet38:
                   Label [batch_size]
                   params: 'num_class', 'batch_size', 'decay_rate' '''
 
-        model = self._build_model(image, is_train=True)
+        # Here padding to 36x36 then randomly crop per image.
+        padded_img = tf.image.resize_image_with_crop_or_pad(image, 36, 36)
+        cropped_img = tf.random_crop(padded_img, [params['batch_size'], 32, 32,3])
+        # padding and cropping end
+
+        model = self._build_model(cropped_img, is_train=True)
         prediction = model['fc_out']
         label = tf.reshape(label, [params['batch_size']])
 
