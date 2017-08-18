@@ -119,7 +119,7 @@ class CIFAR10():
         '''Input batch: [N, H, W, 3]'''
 
         # shape check
-        if np.ndim(image) != 4:
+        if np.ndim(batch_image) != 4:
             sys.exit('Batch Image Standardization shape error!')
         # Standardization
         batch_image = batch_image.astype(np.int64)
@@ -134,8 +134,8 @@ class CIFAR10():
         value_offsets = image_means
 
         normed_batch = np.reshape(batch_image, (batch_shape[0], num_elements))
-        normed_batch = np.subtract(normed_batch, np.reshape(value_offsets, (batch_shape(0),1)))
-        normed_batch = np.divide(normed_batch, np.reshape(value_scales ,(batch_shape(0),1)))
+        normed_batch = np.subtract(normed_batch, np.reshape(value_offsets, (batch_shape[0],1)))
+        normed_batch = np.divide(normed_batch, np.reshape(value_scales ,(batch_shape[0],1)))
         normed_batch = np.reshape(normed_batch, (batch_shape[0], batch_shape[1], batch_shape[2], batch_shape[3]))
 
         return normed_batch

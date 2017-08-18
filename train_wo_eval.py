@@ -8,16 +8,16 @@ import tensorflow as tf
 import data_utils as dt
 from core import resnet38
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 config_gpu = tf.ConfigProto()
-config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.95
+config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.8
 
 train_data_params = {'data_path': 'data/cifar-10-batches-py/',
-                     'batch_size': 128,
+                     'batch_size': 250,
                      'mode': 'Train'}
 dataset = dt.CIFAR10(train_data_params)
 
-params = {'batch_size': 128,
+params = {'batch_size': 250,
           'decay_rate': 0.0002,
           'feed_path': 'data/trained_weights/empty.npy',
           'save_path': 'data/saved_weights/',
@@ -67,7 +67,7 @@ with tf.Session(config=config_gpu) as sess:
             save_npy = sess.run(save_dict_op)
             save_path = params['save_path']
             if len(save_npy.keys()) != 0:
-                save_name = 'CIFAR10_ResNet38_%d_aug.npy'%(epoch)
+                save_name = 'CIFAR10_ResNet38_aug_%d.npy'%(epoch)
                 save_path = save_path + save_name
                 np.save(save_path, save_npy)
         # Shuffle and flip dataset
