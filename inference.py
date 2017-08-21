@@ -13,12 +13,12 @@ config_gpu = tf.ConfigProto()
 config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.8
 
 train_data_params = {'data_path': 'data/cifar-10-batches-py/',
-                     'batch_size': 250,
+                     'batch_size': 125,
                      'mode': 'Test'}
 dataset = dt.CIFAR10(train_data_params)
 
-params = {'batch_size': 250,
-          'feed_path': 'data/saved_weights/CIFAR10_ResNet38_aug_90.npy'}
+params = {'batch_size': 125,
+          'feed_path': 'data/saved_weights/CIFAR10_ResNet38_aug_240.npy'}
 
 with tf.Session() as sess:
 #with tf.Session(config=config_gpu) as sess:

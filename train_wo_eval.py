@@ -10,14 +10,14 @@ from core import resnet38
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 config_gpu = tf.ConfigProto()
-config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.8
+config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.9 
 
 train_data_params = {'data_path': 'data/cifar-10-batches-py/',
-                     'batch_size': 250,
+                     'batch_size': 128,
                      'mode': 'Train'}
 dataset = dt.CIFAR10(train_data_params)
 
-params = {'batch_size': 250,
+params = {'batch_size': 128,
           'decay_rate': 0.0002,
           'feed_path': 'data/trained_weights/empty.npy',
           'save_path': 'data/saved_weights/',
@@ -27,8 +27,8 @@ train_ep = 300
 # val_step_iter = 100
 save_ep = 30
 
-# with tf.Session() as sess:
-with tf.Session(config=config_gpu) as sess:
+with tf.Session() as sess:
+#with tf.Session(config=config_gpu) as sess:
     res38 = resnet38.ResNet38(params['feed_path'])
     save_path = params['save_path']
     batch_size = params['batch_size']
@@ -47,7 +47,7 @@ with tf.Session(config=config_gpu) as sess:
     Train_summary = tf.summary.merge_all()
     # Val_summary = tf.summary.merge([ValLoss_sum, ValAcc_sum])
 
-    writer = tf.summary.FileWriter(params['tsboard_save_path']+'without_split_aug', sess.graph)
+    writer = tf.summary.FileWriter(params['tsboard_save_path']+'without_split_aug2', sess.graph)
     init = tf.global_variables_initializer()
     sess.run(init)
 
