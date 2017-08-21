@@ -20,13 +20,13 @@ def ResUnit_downsample_2convs(input_tensor, feed_dict, shape_dict,
                  var_dict=var_dict)
     RELU_out1 = ReLu_layer(BN_out1)
 
-    # The shortcut convolution layer, using stride=2 to perform downsample
+    # The shortcut convolution layer
     with tf.variable_scope('side'):
-        side_out = conv_layer(RELU_out1, feed_dict, 2, 'SAME',
+        side_out = conv_layer(RELU_out1, feed_dict, 1, 'SAME',
                               shape_dict['side'], var_dict)
-    # Downsampled convolution layer, using stride=2 to perform downsample
+    # The first convolution layer
     with tf.variable_scope('conv1'):
-        CONV_out1 = conv_layer(RELU_out1, feed_dict, 2, 'SAME',
+        CONV_out1 = conv_layer(RELU_out1, feed_dict, 1, 'SAME',
                                shape_dict['convs'][0], var_dict)
     # The second batch norm layer
     BN_out2 = BN(CONV_out1, feed_dict, 'bn2',is_train, shape_dict['convs'][1][2], var_dict)
@@ -40,124 +40,124 @@ def ResUnit_downsample_2convs(input_tensor, feed_dict, shape_dict,
 
     return ResUnit_out
 
-def ResUnit_hybrid_dilate_2conv(input_tensor, feed_dict, shape_dict, var_dict):
-    '''The layer for B5_1'''
+# def ResUnit_hybrid_dilate_2conv(input_tensor, feed_dict, shape_dict, var_dict):
+#     '''The layer for B5_1'''
+# 
+#     if var_dict is not None:
+#         is_train = True
+#     else:
+#         is_train = False
+# 
+#     # The first bath norm layer
+#     BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
+#                  bn_scope='bn1', is_train=is_train,
+#                  shape=shape_dict['convs'][0][2], var_dict=var_dict)
+#     RELU_out1 = ReLu_layer(BN_out1)
+# 
+#     # The side convolution layer, no downsampling
+#     with tf.variable_scope('side'):
+#         side_out = conv_layer(RELU_out1, feed_dict, 1, 'SAME',
+#                               shape_dict['side'], var_dict)
+#     # This first convolution layer
+#     with tf.variable_scope('conv1'):
+#         CONV_out1 = conv_layer(RELU_out1, feed_dict, 1, 'SAME',
+#                                shape_dict['convs'][0], var_dict)
+#     # The second batch norm layer
+#     BN_out2 = BN(CONV_out1, feed_dict, 'bn2', is_train,
+#                  shape_dict['convs'][1][2], var_dict)
+#     RELU_out2 = ReLu_layer(BN_out2)
+#     # dilated convolution layer
+#     with tf.variable_scope('conv2'):
+#         CONV_out2 = conv_dilate_layer(RELU_out2, feed_dict, 2, 'SAME',
+#                                   shape_dict['convs'][1], var_dict)
+# 
+#     # Fuse
+#     ResUnit_out = tf.add(side_out, CONV_out2)
+# 
+#     return ResUnit_out
 
-    if var_dict is not None:
-        is_train = True
-    else:
-        is_train = False
+# def ResUnit_full_dilate_2convs(input_tensor, feed_dict, shape_dict,
+#                                var_dict=None):
+#     '''Residul Unit: all convolution layers are dilated. For B5_2, B5_3'''
+# 
+#     if var_dict is not None:
+#         is_train = True
+#     else:
+#         is_train = False
+# 
+#     # The first batch norm layer
+#     BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
+#                  bn_scope='bn1', is_train=is_train,
+#                  shape=shape_dict[0][2], var_dict=var_dict)
+#     RELU_out1 = ReLu_layer(BN_out1)
+#     # The first dilated convolution layer
+#     with tf.variable_scope('conv1'):
+#         CONV_out1 = conv_dilate_layer(RELU_out1, feed_dict, 2, 'SAME', shape_dict[0], var_dict)
+#     # The second batch norm layer
+#     BN_out2 = BN(CONV_out1, feed_dict, 'bn2', is_train,
+#                              shape_dict[1][2], var_dict)
+#     RELU_out2 = ReLu_layer(BN_out2)
+#     # The second dilated convolution layer
+#     with tf.variable_scope('conv2'):
+#         CONV_out2 = conv_dilate_layer(RELU_out2, feed_dict, 2, 'SAME', shape_dict[1], var_dict)
+# 
+#     # Fuse
+#     ResUnit_out = tf.add(input_tensor, CONV_out2)
+# 
+#     return ResUnit_out
 
-    # The first bath norm layer
-    BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
-                 bn_scope='bn1', is_train=is_train,
-                 shape=shape_dict['convs'][0][2], var_dict=var_dict)
-    RELU_out1 = ReLu_layer(BN_out1)
-
-    # The side convolution layer, no downsampling
-    with tf.variable_scope('side'):
-        side_out = conv_layer(RELU_out1, feed_dict, 1, 'SAME',
-                              shape_dict['side'], var_dict)
-    # This first convolution layer
-    with tf.variable_scope('conv1'):
-        CONV_out1 = conv_layer(RELU_out1, feed_dict, 1, 'SAME',
-                               shape_dict['convs'][0], var_dict)
-    # The second batch norm layer
-    BN_out2 = BN(CONV_out1, feed_dict, 'bn2', is_train,
-                 shape_dict['convs'][1][2], var_dict)
-    RELU_out2 = ReLu_layer(BN_out2)
-    # dilated convolution layer
-    with tf.variable_scope('conv2'):
-        CONV_out2 = conv_dilate_layer(RELU_out2, feed_dict, 2, 'SAME',
-                                  shape_dict['convs'][1], var_dict)
-
-    # Fuse
-    ResUnit_out = tf.add(side_out, CONV_out2)
-
-    return ResUnit_out
-
-def ResUnit_full_dilate_2convs(input_tensor, feed_dict, shape_dict,
-                               var_dict=None):
-    '''Residul Unit: all convolution layers are dilated. For B5_2, B5_3'''
-
-    if var_dict is not None:
-        is_train = True
-    else:
-        is_train = False
-
-    # The first batch norm layer
-    BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
-                 bn_scope='bn1', is_train=is_train,
-                 shape=shape_dict[0][2], var_dict=var_dict)
-    RELU_out1 = ReLu_layer(BN_out1)
-    # The first dilated convolution layer
-    with tf.variable_scope('conv1'):
-        CONV_out1 = conv_dilate_layer(RELU_out1, feed_dict, 2, 'SAME', shape_dict[0], var_dict)
-    # The second batch norm layer
-    BN_out2 = BN(CONV_out1, feed_dict, 'bn2', is_train,
-                             shape_dict[1][2], var_dict)
-    RELU_out2 = ReLu_layer(BN_out2)
-    # The second dilated convolution layer
-    with tf.variable_scope('conv2'):
-        CONV_out2 = conv_dilate_layer(RELU_out2, feed_dict, 2, 'SAME', shape_dict[1], var_dict)
-
-    # Fuse
-    ResUnit_out = tf.add(input_tensor, CONV_out2)
-
-    return ResUnit_out
-
-def ResUnit_hybrid_dilate_3conv(input_tensor, feed_dict, shape_dict, dropout,
-                                var_dict):
-    '''Residual Unit with 3 convolution layers(including 1 dilated conv). For
-    B6, B7'''
-
-    if var_dict is not None:
-        is_train = True
-    else:
-        is_train = False
-
-    # The first batch norm layer
-    BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
-                 bn_scope='bn1', is_train=is_train,
-                 shape=shape_dict[0][2], var_dict=var_dict)
-    RELU_out1 = ReLu_layer(BN_out1)
-    # side conv
-    with tf.variable_scope('side'):
-        side_out = conv_layer(RELU_out1, feed_dict, 1,
-                              'SAME', shape_dict[2], var_dict)
-    # The first conv layer
-    with tf.variable_scope('conv1'):
-        CONV_out1 = conv_layer(RELU_out1, feed_dict, 1, 'SAME', shape_dict[0], var_dict)
-    # The second batch norm layer
-    BN_out2 = BN(CONV_out1, feed_dict, 'bn2', is_train, shape_dict[1][2],
-                 var_dict)
-    RELU_out2 = ReLu_layer(BN_out2)
-    # The second conv layer - dilated
-    with tf.variable_scope('conv2'):
-        CONV_out2 = conv_dilate_layer(RELU_out2, feed_dict,  4,
-                                      'SAME', shape_dict[1], var_dict)
-
-    scope_name = tf.get_variable_scope().name
-    if dropout:
-        if scope_name == 'B7':
-            CONV_out2 = tf.nn.dropout(CONV_out2, 0.7)
-    # The third batch norm layer
-    BN_out3 = BN(CONV_out2, feed_dict, 'bn3', is_train, shape_dict[2][2],
-                 var_dict)
-    RELU_out3 = ReLu_layer(BN_out3)
-    # The third conv layer
-    with tf.variable_scope('conv3'):
-        CONV_out3 = conv_layer(RELU_out3, feed_dict,  1, 'SAME',
-                               shape_dict[2], var_dict)
-    if dropout:
-        if scope_name == 'B6':
-            CONV_out3 = tf.nn.dropout(CONV_out3, 0.7)
-        if scope_name == 'B7':
-            CONV_out3 = tf.nn.dropout(CONV_out3, 0.5)
-    # Fuse
-    ResUnit_out = tf.add(side_out, CONV_out3)
-
-    return ResUnit_out
+# def ResUnit_hybrid_dilate_3conv(input_tensor, feed_dict, shape_dict, dropout,
+#                                 var_dict):
+#     '''Residual Unit with 3 convolution layers(including 1 dilated conv). For
+#     B6, B7'''
+# 
+#     if var_dict is not None:
+#         is_train = True
+#     else:
+#         is_train = False
+# 
+#     # The first batch norm layer
+#     BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
+#                  bn_scope='bn1', is_train=is_train,
+#                  shape=shape_dict[0][2], var_dict=var_dict)
+#     RELU_out1 = ReLu_layer(BN_out1)
+#     # side conv
+#     with tf.variable_scope('side'):
+#         side_out = conv_layer(RELU_out1, feed_dict, 1,
+#                               'SAME', shape_dict[2], var_dict)
+#     # The first conv layer
+#     with tf.variable_scope('conv1'):
+#         CONV_out1 = conv_layer(RELU_out1, feed_dict, 1, 'SAME', shape_dict[0], var_dict)
+#     # The second batch norm layer
+#     BN_out2 = BN(CONV_out1, feed_dict, 'bn2', is_train, shape_dict[1][2],
+#                  var_dict)
+#     RELU_out2 = ReLu_layer(BN_out2)
+#     # The second conv layer - dilated
+#     with tf.variable_scope('conv2'):
+#         CONV_out2 = conv_dilate_layer(RELU_out2, feed_dict,  4,
+#                                       'SAME', shape_dict[1], var_dict)
+# 
+#     scope_name = tf.get_variable_scope().name
+#     if dropout:
+#         if scope_name == 'B7':
+#             CONV_out2 = tf.nn.dropout(CONV_out2, 0.7)
+#     # The third batch norm layer
+#     BN_out3 = BN(CONV_out2, feed_dict, 'bn3', is_train, shape_dict[2][2],
+#                  var_dict)
+#     RELU_out3 = ReLu_layer(BN_out3)
+#     # The third conv layer
+#     with tf.variable_scope('conv3'):
+#         CONV_out3 = conv_layer(RELU_out3, feed_dict,  1, 'SAME',
+#                                shape_dict[2], var_dict)
+#     if dropout:
+#         if scope_name == 'B6':
+#             CONV_out3 = tf.nn.dropout(CONV_out3, 0.7)
+#         if scope_name == 'B7':
+#             CONV_out3 = tf.nn.dropout(CONV_out3, 0.5)
+#     # Fuse
+#     ResUnit_out = tf.add(side_out, CONV_out3)
+# 
+#     return ResUnit_out
 
 def ResUnit_tail(input_tensor, feed_dict, shape_dict, var_dict=None):
     '''The ResNet38 Tail'''
@@ -204,22 +204,97 @@ def ResUnit_2convs(input_tensor, feed_dict, shape, var_dict=None):
 
     return ResUnit_out
 
-def conv_dilate_layer(input_tensor, feed_dict, rate, padding='SAME',
-                      shape=None, var_dict=None):
-    '''dilated convolution layer using tensorflow atrous_conv2d'''
-
-    scope_name = tf.get_variable_scope().name
-    print('Layer name: %s'%scope_name)
-    kernel = get_conv_kernel(feed_dict, shape)
-
-    conv_out = tf.nn.atrous_conv2d(input_tensor, kernel, rate, padding)
+def ResUnit_bottleneck_2convs(input_tensor, feed_dict, shape, var_dict=None):
+    '''The bottleneck with 2 convs Residual Unit'''
 
     if var_dict is not None:
-        if not var_dict.has_key(scope_name):
-            var_dict[scope_name] = {}
-        var_dict[scope_name]['kernel'] = kernel
+        is_train = True
+    else:
+        is_train = False
 
-    return conv_out
+    # The first batch norm layer
+    BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
+                 bn_scope='bn1', is_train=is_train, shape=shape[0][2],
+                 var_dict=var_dict)
+    RELU_out1 = ReLu_layer(BN_out1)
+    # The first conv layer
+    with tf.variable_scope('conv1'):
+        CONV_out1 = conv_layer(RELU_out1, feed_dict, 1, 'SAME', shape[0], var_dict)
+    # The second batch norm layer
+    BN_out2 = BN(CONV_out1, feed_dict, 'bn2', is_train, shape[1][2], var_dict)
+    RELU_out2 = ReLu_layer(BN_out2)
+    # The second conv layer
+    with tf.variable_scope('conv2'):
+        CONV_out2 = conv_layer(RELU_out2, feed_dict, 1, 'SAME', shape[1], var_dict)
+    # Fuse
+    ResUnit_out = tf.add(input_tensor, CONV_out2)
+
+    return ResUnit_out
+
+def ResUnit_bottleneck_3conv(input_tensor, feed_dict, shape, dropout, var_dict):
+    '''The bottleneck with 3 convs Residual Unit'''
+
+    if var_dict is not None:
+        is_train = True
+    else:
+        is_train = False
+
+    # The first batch norm layer
+    BN_out1 = BN(input_tensor=input_tensor, feed_dict=feed_dict,
+                 bn_scope='bn1', is_train=is_train, shape=shape[0][2],
+                 var_dict=var_dict)
+    RELU_out1 = ReLu_layer(BN_out1)
+    # side conv
+    with tf.variable_scope('side'):
+        side_out = conv_layer(RELU_out1, feed_dict, 1, 'SAME', shape[2], var_dict)
+    # The first conv layer
+    with tf.variable_scope('conv1'):
+        CONV_out1 = conv_layer(RELU_out1, feed_dict, 1, 'SAME', shape[0], var_dict)
+    # The second batch norm layer
+    BN_out2 = BN(CONV_out1, feed_dict, 'bn2', is_train, shape[1][2], var_dict)
+    RELU_out2 = ReLu_layer(BN_out2)
+    # The second conv layer
+    with tf.variable_scope('conv2'):
+        CONV_out2 = conv_layer(RELU_out2, feed_dict, 1, 'SAME', shape[1], var_dict)
+
+    scope_name = tf.get_variable_scope().name
+    if dropout:
+        if scope_name == 'B7':
+            CONV_out2 = tf.nn.dropout(CONV_out2, 0.7)
+    # The third batch norm layer
+    BN_out3 = BN(CONV_out2, feed_dict, 'bn3', is_train, shape[2][2], var_dict)
+    RELU_out3 = ReLu_layer(BN_out3)
+    # The third conv layer
+    with tf.variable_scope('conv3'):
+        CONV_out3 = conv_layer(RELU_out3, feed_dict, 1, 'SAME', shape[2], var_dict)
+    if dropout:
+        if scope_name == 'B6':
+            CONV_out3 = tf.nn.dropout(CONV_out3, 0.7)
+        if scope_name == 'B7':
+            CONV_out3 = tf.nn.dropout(CONV_out3, 0.5)
+
+    # Fuse
+    ResUnit_out = tf.add(side_out, CONV_out3)
+
+    return ResUnit_out
+
+
+# def conv_dilate_layer(input_tensor, feed_dict, rate, padding='SAME',
+#                       shape=None, var_dict=None):
+#     '''dilated convolution layer using tensorflow atrous_conv2d'''
+# 
+#     scope_name = tf.get_variable_scope().name
+#     print('Layer name: %s'%scope_name)
+#     kernel = get_conv_kernel(feed_dict, shape)
+# 
+#     conv_out = tf.nn.atrous_conv2d(input_tensor, kernel, rate, padding)
+# 
+#     if var_dict is not None:
+#         if not var_dict.has_key(scope_name):
+#             var_dict[scope_name] = {}
+#         var_dict[scope_name]['kernel'] = kernel
+# 
+#     return conv_out
 
 def conv_layer(input_tensor, feed_dict, stride, padding='SAME', shape=None,
                var_dict=None):
@@ -295,6 +370,13 @@ def ReLu_layer(relu_in):
     relu_out = tf.nn.relu(relu_in)
 
     return relu_out
+
+def max_pool(input_tensor, ksize=[1,3,3,1], stride=[1,2,2,1]):
+    '''Default ksize and stride come from paper Wider or Deeper'''
+
+    pooled_out = tf.nn.max_pool(input_tensor, ksize=ksize, strides=stride, padding='SAME')
+
+    return pooled_out
 
 def get_bn_params(feed_dict, shape):
     '''Retrive batch norm params'''

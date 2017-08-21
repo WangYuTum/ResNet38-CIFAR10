@@ -10,7 +10,7 @@ from core import resnet38
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 config_gpu = tf.ConfigProto()
-config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.9 
+config_gpu.gpu_options.per_process_gpu_memory_fraction = 0.8 
 
 train_data_params = {'data_path': 'data/cifar-10-batches-py/',
                      'batch_size': 128,
@@ -47,7 +47,7 @@ with tf.Session() as sess:
     Train_summary = tf.summary.merge_all()
     # Val_summary = tf.summary.merge([ValLoss_sum, ValAcc_sum])
 
-    writer = tf.summary.FileWriter(params['tsboard_save_path']+'without_split_aug2', sess.graph)
+    writer = tf.summary.FileWriter(params['tsboard_save_path']+'without_split_aug2_modelA', sess.graph)
     init = tf.global_variables_initializer()
     sess.run(init)
 
@@ -67,7 +67,7 @@ with tf.Session() as sess:
             save_npy = sess.run(save_dict_op)
             save_path = params['save_path']
             if len(save_npy.keys()) != 0:
-                save_name = 'CIFAR10_ResNet38_aug_%d.npy'%(epoch)
+                save_name = 'CIFAR10_ResNet38_aug_modelA_%d.npy'%(epoch)
                 save_path = save_path + save_name
                 np.save(save_path, save_npy)
         # Shuffle and flip dataset

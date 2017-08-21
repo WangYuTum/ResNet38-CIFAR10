@@ -16,6 +16,8 @@ class ResNet38:
         self._weight_dict = dt.load_weight(weight_path)
         self._var_dict = {}
         self._num_classes = 10
+        self._poolsize = [1,3,3,1]
+        self._poolstride = [1,2,2,1]
 
     def _build_model(self, image, is_train=False):
         '''If is_train, save weight to self._var_dict,
@@ -41,12 +43,17 @@ class ResNet38:
             model['B0'] = nn.conv_layer(image, feed_dict, 1, 'SAME',
                                         shape_dict['B0'], var_dict)
 
-        # B2_1: [H,W,64] -> [H/2, W/2, 128]
+        # Pool0: [H,W,64] -> [H/2, W/2, 64]
+        with tf.variable_scope('Pool0'):
+            model['Pool0'] = nn.max_pool(model['B0'], ksize=self._poolsize, stride=self._poolstride)
+        # B2_1: [H/2, W/2, 64] -> [H/2, W/2, 128]
+        # Note that downsampling is performed via max pooling, not the ResUnit function.
+        # The name of the function is missleading because of historical reason
         shape_dict['B2'] = {}
         shape_dict['B2']['side'] = [1,1,64,128]
         shape_dict['B2']['convs'] = [[3,3,64,128],[3,3,128,128]]
         with tf.variable_scope('B2_1'):
-            model['B2_1'] = nn.ResUnit_downsample_2convs(model['B0'],
+            model['B2_1'] = nn.ResUnit_downsample_2convs(model['Pool0'],
                                                          feed_dict,
                                                          shape_dict['B2'],
                                                          var_dict=var_dict)
@@ -56,13 +63,15 @@ class ResNet38:
                 model['B2_'+str(i+2)] = nn.ResUnit_2convs(model['B2_'+str(i+1)], feed_dict,
                                                           shape_dict['B2']['convs'][1],
                                                           var_dict=var_dict)
-
-        # B3_1: [H/2, W/2, 128] -> [H/4, W/4, 256]
+        # Pool1: [H/2, W/2, 128] -> [H/4, W/4, 128]
+        with tf.variable_scope('Pool1'):
+            model['Pool1'] = nn.max_pool(model['B2_3'], ksize=self._poolsize, stride=self._poolstride)
+        # B3_1: [H/4, W/4, 128] -> [H/4, W/4, 256]
         shape_dict['B3'] = {}
         shape_dict['B3']['side'] = [1,1,128,256]
         shape_dict['B3']['convs'] = [[3,3,128,256],[3,3,256,256]]
         with tf.variable_scope('B3_1'):
-            model['B3_1'] = nn.ResUnit_downsample_2convs(model['B2_3'],
+            model['B3_1'] = nn.ResUnit_downsample_2convs(model['Pool1'],
                                                          feed_dict,
                                                          shape_dict['B3'],
                                                          var_dict=var_dict)
@@ -72,12 +81,15 @@ class ResNet38:
                 model['B3_'+str(i+2)] = nn.ResUnit_2convs(model['B3_'+str(i+1)], feed_dict,
                                                           shape_dict['B3']['convs'][1],
                                                           var_dict=var_dict)
-        # B4_1: [H/4, W/4, 256] -> [H/8, W/8, 512]
+        # Pool2: [H/4, W/4, 256] -> [H/8, W/8, 256]
+        with tf.variable_scope('Pool2'):
+            model['Pool2'] = nn.max_pool(model['B3_3'], ksize=self._poolsize, stride=self._poolstride)
+        # B4_1: [H/8, W/8, 256] -> [H/8, W/8, 512]
         shape_dict['B4'] = {}
         shape_dict['B4']['side'] = [1,1,256,512]
         shape_dict['B4']['convs'] = [[3,3,256,512],[3,3,512,512]]
         with tf.variable_scope('B4_1'):
-            model['B4_1'] = nn.ResUnit_downsample_2convs(model['B3_3'],
+            model['B4_1'] = nn.ResUnit_downsample_2convs(model['Pool2'],
                                                              feed_dict,
                                                              shape_dict['B4'],
                                                              var_dict=var_dict)
@@ -93,7 +105,7 @@ class ResNet38:
         shape_dict['B5_1']['side'] = [1,1,512,1024]
         shape_dict['B5_1']['convs'] = [[3,3,512,512],[3,3,512,1024]]
         with tf.variable_scope('B5_1'):
-            model['B5_1'] = nn.ResUnit_hybrid_dilate_2conv(model['B4_6'],
+            model['B5_1'] = nn.ResUnit_downsample_2convs(model['B4_6'],
                                                                feed_dict,
                                                                shape_dict['B5_1'],
                                                                var_dict=var_dict)
@@ -102,14 +114,14 @@ class ResNet38:
         shape_dict['B5_2_3'] = [[3,3,1024,512],[3,3,512,1024]]
         for i in range(2):
             with tf.variable_scope('B5_'+str(i+2)):
-                model['B5_'+str(i+2)] = nn.ResUnit_full_dilate_2convs(model['B5_'+str(i+1)],
+                model['B5_'+str(i+2)] = nn.ResUnit_bottleneck_2convs(model['B5_'+str(i+1)],
                                                   feed_dict, shape_dict['B5_2_3'],
                                                   var_dict=var_dict)
 
         # B6: [H/8, W/8, 1024] -> [H/8, W/8, 2048]
         shape_dict['B6'] = [[1,1,1024,512],[3,3,512,1024],[1,1,1024,2048]]
         with tf.variable_scope('B6'):
-            model['B6'] = nn.ResUnit_hybrid_dilate_3conv(model['B5_3'],
+            model['B6'] = nn.ResUnit_bottleneck_3conv(model['B5_3'],
                                                              feed_dict,
                                                              shape_dict['B6'],
                                                              dropout=dropout,
@@ -117,7 +129,7 @@ class ResNet38:
         # B7: [H/8, W/8, 2048] -> [H/8, W/8, 4096]
         shape_dict['B7'] = [[1,1,2048,1024],[3,3,1024,2048],[1,1,2048,4096]]
         with tf.variable_scope('B7'):
-            model['B7'] = nn.ResUnit_hybrid_dilate_3conv(model['B6'],
+            model['B7'] = nn.ResUnit_bottleneck_3conv(model['B6'],
                                                              feed_dict,
                                                              shape_dict['B7'],
                                                              dropout=dropout,
