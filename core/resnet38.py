@@ -162,7 +162,11 @@ class ResNet38:
         cropped_img = tf.random_crop(padded_img, [params['batch_size'], 32, 32,3])
         # padding and cropping end
 
-        model = self._build_model(cropped_img, is_train=True)
+        # Here randomly flip each image
+        flipped_img = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), cropped_img)
+        # randomly flipping end
+
+        model = self._build_model(flipped_img, is_train=True)
         prediction = model['fc_out']
         label = tf.reshape(label, [params['batch_size']])
 
