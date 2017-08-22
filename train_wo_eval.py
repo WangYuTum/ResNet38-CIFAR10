@@ -23,7 +23,7 @@ params = {'batch_size': 128,
           'save_path': 'data/saved_weights/',
           'tsboard_save_path': 'data/tsboard/'}
 
-train_ep = 300
+train_ep = 271
 # val_step_iter = 100
 save_ep = 30
 
@@ -47,7 +47,7 @@ with tf.Session() as sess:
     Train_summary = tf.summary.merge_all()
     # Val_summary = tf.summary.merge([ValLoss_sum, ValAcc_sum])
 
-    writer = tf.summary.FileWriter(params['tsboard_save_path']+'without_split_aug2', sess.graph)
+    writer = tf.summary.FileWriter(params['tsboard_save_path']+'without_split_aug3', sess.graph)
     init = tf.global_variables_initializer()
     sess.run(init)
 
@@ -67,7 +67,7 @@ with tf.Session() as sess:
             save_npy = sess.run(save_dict_op)
             save_path = params['save_path']
             if len(save_npy.keys()) != 0:
-                save_name = 'CIFAR10_ResNet38_aug_%d.npy'%(epoch)
+                save_name = 'CIFAR10_ResNet38_aug3_%d.npy'%(epoch)
                 save_path = save_path + save_name
                 np.save(save_path, save_npy)
         # Shuffle and flip dataset
