@@ -19,4 +19,9 @@ Global-avg-pool -> Fully connected -> Softmax
 
 ## Acknowledge
 
-Thanks for the GPU provided by [Computer Vision and Pattern Recongnition Group at Technical University Munich](https://vision.in.tum.de/) 
+Thanks for the GPU provided by [Computer Vision and Pattern Recongnition Group at Technical University Munich](https://vision.in.tum.de/)
+
+## Update
+
+ - Data augmentation: Randomly flip per image during training instead of flip all images per epoch.
+ - Accuracy: ???
