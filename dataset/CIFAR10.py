@@ -22,12 +22,12 @@ class CIFAR10():
         self._data_path = params['data_path']
         self._batch_size = params['batch_size']
         self._mode = params['mode']
-        self._TrainImageSet = None
-        self._TrainLabelSet = None
-        self._ValImageSet = None
-        self._ValLabelSet = None
-        self._TestImageSet = None
-        self._TestLabelSet = None
+        self._train_image_set = None
+        self._train_label_set = None
+        self._val_image_set = None
+        self._val_label_set = None
+        self._test_image_set = None
+        self._test_label_set = None
         self._batch_index = 0
 
         if self._mode == 'Train':
@@ -42,8 +42,8 @@ class CIFAR10():
         # Train set 45k, Validation set 5k
         # Don't split if use full training set
         # self._split()
-        self._TrainImageSet , self._TrainLabelSet = self._get_TrainPool()
-        self._TestImageSet, self._TestLabelSet = self._TestImagePool, self._TestLabelPool = self._get_TestPool()
+        self._train_image_set , self._train_label_set = self._get_TrainPool()
+        self._test_image_set, self._test_label_set = self._TestImagePool, self._TestLabelPool = self._get_TestPool()
         self._check_shape()
         self._print_info()
 
@@ -177,8 +177,8 @@ class CIFAR10():
 
         sample_indices = random.sample(xrange(5000), self._batch_size)
 
-        next_batch_image = np.take(self._ValImageSet, sample_indices, axis=0)
-        next_batch_label = np.take(self._ValLabelSet, sample_indices, axis=0)
+        next_batch_image = np.take(self._val_image_set, sample_indices, axis=0)
+        next_batch_label = np.take(self._val_label_set, sample_indices, axis=0)
 
         return next_batch_image, next_batch_label
 
@@ -186,14 +186,14 @@ class CIFAR10():
         '''Split traning pool into TrainSet(45k) and ValSet(5k), randomly pick 5k images for ValSet'''
 
         TrainImagePool, TrainLabelPool = self._get_TrainPool()
-        self._TestImageSet, self._TestLabelSet = self._TestImagePool, self._TestLabelPool = self._get_TestPool()
+        self._test_image_set, self._test_label_set = self._TestImagePool, self._TestLabelPool = self._get_TestPool()
         sample_indices = random.sample(xrange(50000),5000)
 
-        self._ValImageSet = np.take(TrainImagePool, sample_indices, axis=0)
-        self._ValLabelSet = np.take(TrainLabelPool, sample_indices, axis=0)
+        self._val_image_set = np.take(TrainImagePool, sample_indices, axis=0)
+        self._val_label_set = np.take(TrainLabelPool, sample_indices, axis=0)
 
-        self._TrainImageSet = np.delete(TrainImagePool, sample_indices, axis=0)
-        self._TrainLabelSet = np.delete(TrainLabelPool, sample_indices, axis=0)
+        self._train_image_set = np.delete(TrainImagePool, sample_indices, axis=0)
+        self._train_label_set = np.delete(TrainLabelPool, sample_indices, axis=0)
 
     def shuffle(self):
         '''Shuffle the Train Set 45k images and the corresponding labels'''
@@ -202,20 +202,20 @@ class CIFAR10():
         # sample_indices = np.random.permutation(45000)
         # if use full train set 50000
         sample_indices = np.random.permutation(50000)
-        self._TrainImageSet = np.take(self._TrainImageSet, sample_indices, axis=0)
-        self._TrainLabelSet = np.take(self._TrainLabelSet, sample_indices, axis=0)
+        self._train_image_set = np.take(self._train_image_set, sample_indices, axis=0)
+        self._train_label_set = np.take(self._train_label_set, sample_indices, axis=0)
 
     def flip(self):
         '''Horizontally flip all images'''
 
-        self._TrainImageSet = self._TrainImageSet[:,:,::-1]
+        self._train_image_set = self._train_image_set[:,:,::-1]
 
     def next_batch(self):
 
         if self._mode == 'Train':
-            next_batch_image, next_batch_label = self._get_next_batch(self._TrainImageSet,self._TrainLabelSet)
+            next_batch_image, next_batch_label = self._get_next_batch(self._train_image_set,self._train_label_set)
         elif self._mode == 'Test':
-            next_batch_image, next_batch_label = self._get_next_batch(self._TestImageSet,self._TestLabelSet)
+            next_batch_image, next_batch_label = self._get_next_batch(self._test_image_set,self._test_label_set)
         else:
             sys.exit('load next batch error!')
 
@@ -252,35 +252,35 @@ class CIFAR10():
     def _get_valset(self):
         '''Get Validation Set image/label set'''
 
-        return self._TestImageSet, self._TestLabelSet
+        return self._test_image_set, self._test_label_set
 
     def _print_info(self):
         '''Print necessary info about the CIFAR10 dataset after initialized'''
 
         print('Loaded dataset %s:'%self._data_path)
-        # print('Training Set {0}, Validation Set {1}, Test Set {2}'.format(np.shape(self._TrainImageSet)[0], np.shape(self._ValImageSet)[0], np.shape(self._TestImageSet)[0]))
-        print('Training Set {0}, Test Set {1}'.format(np.shape(self._TrainImageSet)[0], np.shape(self._TestImageSet)[0]))
+        # print('Training Set {0}, Validation Set {1}, Test Set {2}'.format(np.shape(self._train_image_set)[0], np.shape(self._val_image_set)[0], np.shape(self._test_image_set)[0]))
+        print('Training Set {0}, Test Set {1}'.format(np.shape(self._train_image_set)[0], np.shape(self._test_image_set)[0]))
         print('Shape:')
-        print('Training Set: {0}, Label {1}'.format(np.shape(self._TrainImageSet), np.shape(self._TrainLabelSet)))
-        # print('Validation Set: {0}, Label {1}'.format(np.shape(self._ValImageSet), np.shape(self._ValLabelSet)))
-        print('Test Set: {0}, Label {1}'.format(np.shape(self._TestImageSet), np.shape(self._TestLabelSet)))
+        print('Training Set: {0}, Label {1}'.format(np.shape(self._train_image_set), np.shape(self._train_label_set)))
+        # print('Validation Set: {0}, Label {1}'.format(np.shape(self._val_image_set), np.shape(self._val_label_set)))
+        print('Test Set: {0}, Label {1}'.format(np.shape(self._test_image_set), np.shape(self._test_label_set)))
 
     def _check_shape(self):
         '''Do check on data set shapes'''
 
         flag = False
         try:
-            if np.shape(self._TrainImageSet)[0] != np.shape(self._TrainLabelSet)[0]:
+            if np.shape(self._train_image_set)[0] != np.shape(self._train_label_set)[0]:
                 flag = True
-            if np.shape(self._TrainImageSet)[0] != 50000:
+            if np.shape(self._train_image_set)[0] != 50000:
                 flag = True
-            # if np.shape(self._ValImageSet)[0] != np.shape(self._ValLabelSet)[0]:
+            # if np.shape(self._val_image_set)[0] != np.shape(self._val_label_set)[0]:
             #    flag = True
-            # if np.shape(self._ValImageSet)[0] != 5000:
+            # if np.shape(self._val_image_set)[0] != 5000:
             #    flag = True
-            if np.shape(self._TestImageSet)[0] != np.shape(self._TestLabelSet)[0]:
+            if np.shape(self._test_image_set)[0] != np.shape(self._test_label_set)[0]:
                 flag = True
-            if np.shape(self._TestImageSet)[0] != 10000:
+            if np.shape(self._test_image_set)[0] != 10000:
                 flag = True
 
             if flag is True:
