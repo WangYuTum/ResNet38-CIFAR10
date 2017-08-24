@@ -35,6 +35,9 @@ class ResNet38:
         else:
             dropout = False
 
+        # Do not use dropout for CIFAR10 classification
+        dropout = False
+
         shape_dict = {}
         shape_dict['B0'] = [3,3,3,64]
 
@@ -149,7 +152,7 @@ class ResNet38:
         with tf.variable_scope('FC'):
             batch_size = tf.shape(model['pool_out'])[0]
             model['fc_out'] = nn.FC(model['pool_out'], batch_size, feed_dict,
-                                    self._num_classes, var_dict)
+                                    self._num_classes, shape_dict['Tail'], var_dict)
 
         return model
 
@@ -174,7 +177,11 @@ class ResNet38:
         cropped_img = tf.random_crop(padded_img, [params['batch_size'], 32, 32,3])
         # padding and cropping end
 
-        model = self._build_model(cropped_img, is_train=True)
+        # Here randomly flip each image
+        flipped_img = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), cropped_img)
+        # randomly flipping end
+
+        model = self._build_model(flipped_img, is_train=True)
         prediction = model['fc_out']
         label = tf.reshape(label, [params['batch_size']])
 
@@ -189,7 +196,7 @@ class ResNet38:
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
             # default learning rate for Adam: 0.001
-            train_op = tf.train.AdamOptimizer().minimize(total_loss)
+            train_op = tf.train.AdamOptimizer(learning_rate=0.001).minimize(total_loss)
 
         return train_op, total_loss, train_acc, correct_preds
 

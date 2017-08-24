@@ -2,9 +2,8 @@
 
 ## Implementation
 
-Implement Model A in paper [Wider or Deeper: Revisiting the ResNet Model for Visual Recognition](https://arxiv.org/abs/1611.10080).
-Use max pooling to perform downsampling. Downsample 3 times. No dilated convolutions
-Use dropout on wide layers 2048 and 4096, however this is not specified in original paper.
+Implement original Model A in paper [Wider or Deeper: Revisiting the ResNet Model for Visual Recognition](https://arxiv.org/abs/1611.10080).
+Downsampling 3 times with maxpool. No dilated convolution. No dropout.
 
 Model A structure: Input(32x32) -> B0 -> max-pool -> B2(x3) -> max-pool -> B3(x3) -> max-pool -> B4(x6) -> B5(x3) -> B6(x1) -> B7(x1) ->
 Global-avg-pool -> Fully connected -> Softmax
@@ -12,10 +11,10 @@ Global-avg-pool -> Fully connected -> Softmax
 ## Results
 
 - Under development
-- Best accuracy so far: 89.10% (210 epoches)
+- Best accuracy so far: ???
 - Data set: 50000 training image. 10000 test images(not used for training).
-- Data augmentation: Per image standardization. Per image pad to 36x36, then randomly crop to 32x32. Randomly shuffle all images per epoch. Flip all images per epoch.
-- Training: Train 210 epochs. Batch 128. Adam optimizer(with default hyperparameters). L2 weight decay 0.0002.
+- Data augmentation: Per image standardization. Per image pad to 36x36, then randomly crop to 32x32. Randomly shuffle all images per epoch. Per image randomly flip during training.
+- Training: Train ??? epochs. Batch 128. Adam optimizer(initial learning rate 0.001 -> ???). L2 weight decay 0.0002.
 - Device: GTX TITAN (Pascal) 12GB
 
 ## Acknowledge

@@ -72,6 +72,6 @@ with tf.Session() as sess:
                 np.save(save_path, save_npy)
         # Shuffle and flip dataset
         dataset.shuffle()
-        dataset.flip()
+        # dataset.flip()
 
 

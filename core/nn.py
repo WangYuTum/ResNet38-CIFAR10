@@ -408,13 +408,13 @@ def Global_avg_pool(input_tensor):
 
     return mean_out
 
-def FC(input_tensor, batch_size, feed_dict, num_class, var_dict=None):
+def FC(input_tensor, batch_size, feed_dict, num_class, shape, var_dict=None):
     '''Fully connected layer'''
 
     scope_name = tf.get_variable_scope().name
     print('Layer name: %s'%scope_name)
     input_tensor = tf.reshape(input_tensor, [batch_size,-1])
-    fc_weight = get_fc_weight(feed_dict, [4096, num_class])
+    fc_weight = get_fc_weight(feed_dict, [shape, num_class])
     fc_bias = get_fc_bias(feed_dict, [num_class])
 
     fc_out = tf.nn.xw_plus_b(input_tensor, fc_weight, fc_bias)
