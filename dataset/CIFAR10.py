@@ -21,22 +21,18 @@ class CIFAR10():
 
         self._data_path = params['data_path']
         self._batch_size = params['batch_size']
-        self._mode = params['mode']
+        # self._mode = params['mode']
         self._train_image_set = None
         self._train_label_set = None
         self._val_image_set = None
         self._val_label_set = None
         self._test_image_set = None
         self._test_label_set = None
-        self._batch_index = 0
+        self._train_batch_index = 0
+        self._test_batch_index = 0
 
-        if self._mode == 'Train':
-            # Use full training set
-            self._total_batches = 50000 / self._batch_size
-            # self._total_batches = 45000 / self._batch_size
-        else:
-            # Use test set
-            self._total_batches = 10000 / self._batch_size
+        self._total_train_batches = 50000 / self._batch_size
+        self._total_test_batches = 10000 / self._batch_size
 
         # Split Training set and Validation set in Train Pool
         # Train set 45k, Validation set 5k
@@ -44,6 +40,9 @@ class CIFAR10():
         # self._split()
         self._train_image_set , self._train_label_set = self._get_TrainPool()
         self._test_image_set, self._test_label_set = self._TestImagePool, self._TestLabelPool = self._get_TestPool()
+        # Data Augmentation 
+        self._train_image_set = self._batch_image_standardization(self._train_image_set)
+        self._test_image_set = self._batch_image_standardization(self._test_image_set)
         self._check_shape()
         self._print_info()
 
@@ -82,7 +81,7 @@ class CIFAR10():
            By default, num_images=10000'''
 
         image_data = batch_dict['data']
-        label_data = batch_dict['labels']
+        label_data = np.array(batch_dict['labels'])
         num_images = np.shape(image_data)[0]
 
         images = np.reshape(image_data, (num_images,32,32,3), order='F')
@@ -210,44 +209,73 @@ class CIFAR10():
 
         self._train_image_set = self._train_image_set[:,:,::-1]
 
-    def next_batch(self):
-
-        if self._mode == 'Train':
-            next_batch_image, next_batch_label = self._get_next_batch(self._train_image_set,self._train_label_set)
-        elif self._mode == 'Test':
-            next_batch_image, next_batch_label = self._get_next_batch(self._test_image_set,self._test_label_set)
-        else:
-            sys.exit('load next batch error!')
-
+    def next_train_batch(self):
+        next_batch_image, next_batch_label = self._get_next_train_batch(self._train_image_set,
+                                                                        self._train_label_set)
         return next_batch_image, next_batch_label
 
-    def _get_next_batch(self, image_set, label_set):
+    def next_test_batch(self):
+        next_batch_image, next_batch_label = self._get_next_test_batch(self._test_image_set,
+                                                                       self._test_label_set)
+        return next_batch_image, next_batch_label
+
+    def _get_next_train_batch(self, image_set, label_set):
         '''Return next batch of Train Set image/label set according to batch_size'''
         # Be careful about the index change at boundaries; or when batch_size if small
+        full_size = 50000
+        total_batches = self._total_train_batches
+        batch_index = self._train_batch_index
 
-        if self._batch_index < self._total_batches:
-            next_batch_image = image_set[self._batch_index * self._batch_size: (self._batch_index + 1) * self._batch_size]
-            next_batch_label = label_set[self._batch_index * self._batch_size: (self._batch_index + 1) * self._batch_size]
-            self._batch_index += 1
+        if batch_index < total_batches:
+            next_batch_image = image_set[batch_index * self._batch_size :
+                                         (batch_index + 1) * self._batch_size]
+            next_batch_label = label_set[batch_index * self._batch_size:
+                                         (batch_index + 1) * self._batch_size]
+            self._train_batch_index += 1
         else:
-            # if use split
-            # full_size = 45000
-            if self._mode == 'Train':
-                full_size = 50000
-            else:
-                full_size = 10000
-            first_part_image = image_set[self._batch_index * self._batch_size: full_size]
-            first_part_label = label_set[self._batch_index * self._batch_size: full_size]
-            residul_num = self._batch_size - (full_size - self._batch_index * self._batch_size)
+            first_part_image = image_set[batch_index * self._batch_size: full_size]
+            first_part_label = label_set[batch_index * self._batch_size: full_size]
+            residul_num = self._batch_size - (full_size - batch_index * self._batch_size)
             second_part_image = image_set[0: residul_num]
             second_part_label = label_set[0: residul_num]
             next_batch_image = np.concatenate((first_part_image, second_part_image),axis=0)
             next_batch_label = np.concatenate((first_part_label, second_part_label),axis=0)
             # reset index to 0
-            self._batch_index = 0
-        next_batch_image = self._batch_image_standardization(next_batch_image)
+            self._train_batch_index = 0
+        # Already aug in the first place
+        # next_batch_image = self._batch_image_standardization(next_batch_image)
 
         return next_batch_image, next_batch_label
+
+
+    def _get_next_test_batch(self, image_set, label_set):
+        '''Return next batch of Test Set image/label set according to batch_size'''
+        # Be careful about the index change at boundaries; or when batch_size if small
+        full_size = 10000
+        total_batches = self._total_test_batches
+        batch_index = self._test_batch_index
+
+        if batch_index < total_batches:
+            next_batch_image = image_set[batch_index * self._batch_size :
+                                         (batch_index + 1) * self._batch_size]
+            next_batch_label = label_set[batch_index * self._batch_size:
+                                         (batch_index + 1) * self._batch_size]
+            self._test_batch_index += 1
+        else:
+            first_part_image = image_set[batch_index * self._batch_size: full_size]
+            first_part_label = label_set[batch_index * self._batch_size: full_size]
+            residul_num = self._batch_size - (full_size - batch_index * self._batch_size)
+            second_part_image = image_set[0: residul_num]
+            second_part_label = label_set[0: residul_num]
+            next_batch_image = np.concatenate((first_part_image, second_part_image),axis=0)
+            next_batch_label = np.concatenate((first_part_label, second_part_label),axis=0)
+            # reset index to 0
+            self._test_batch_index = 0
+        # Already aug in the first place
+        # next_batch_image = self._batch_image_standardization(next_batch_image)
+
+        return next_batch_image, next_batch_label
+
 
     def _get_valset(self):
         '''Get Validation Set image/label set'''
