@@ -18,10 +18,10 @@ train_data_params = {'data_path': 'data/cifar-10-batches-py/',
 dataset = dt.CIFAR10(train_data_params)
 
 params = {'batch_size': 125,
-          'feed_path': 'data/saved_weights/CIFAR10_ResNet38_aug_240.npy'}
+          'feed_path': 'data/saved_weights/modelA_40e3_130.npy'}
 
-with tf.Session() as sess:
-#with tf.Session(config=config_gpu) as sess:
+# with tf.Session() as sess:
+with tf.Session(config=config_gpu) as sess:
     res38 = resnet38.ResNet38(params['feed_path'])
     batch_size = params['batch_size']
 

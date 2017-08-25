@@ -196,7 +196,7 @@ class ResNet38:
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
             # default learning rate for Adam: 0.001
-            train_op = tf.train.AdamOptimizer(learning_rate=0.001).minimize(total_loss)
+            train_op = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(total_loss)
 
         return train_op, total_loss, train_acc, correct_preds
 
