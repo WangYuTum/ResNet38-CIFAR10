@@ -25,9 +25,7 @@ with tf.Session() as sess:
     res38 = resnet38.ResNet38(params['feed_path'])
     batch_size = params['batch_size']
 
-    # From here
-    test_img = tf.placeholder(tf.float32, shape=[batch_size, 32, 32,
-                                                  3])
+    test_img = tf.placeholder(tf.float32, shape=[batch_size, 32, 32, 3])
     test_label = tf.placeholder(tf.int64, shape=[batch_size])
 
     # 10000 / 125 = 80 iters
@@ -36,6 +34,7 @@ with tf.Session() as sess:
     init = tf.global_variables_initializer()
     sess.run(init)
 
+    print('Number of parameters: {0}'.format(res38.num_parameters()))
     num_iters = np.int32(10000 / batch_size)
     num_correct = 0.0
     print('Start inference...')

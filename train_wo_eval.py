@@ -51,6 +51,7 @@ with tf.Session() as sess:
     init = tf.global_variables_initializer()
     sess.run(init)
 
+    print('Number of parameters: {0}'.format(res38.num_parameters()))
     num_iters = np.int32(50000 / batch_size) + 1
     print('Start training...')
     for epoch in range(train_ep):

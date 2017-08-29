@@ -152,6 +152,11 @@ class ResNet38:
 
         return tf.multiply(decay_rate, tf.add_n(l2_losses))
 
+    def num_parameters(self):
+        '''Compute the number of trainable parameters. Note that it MUST be called after the graph is built'''
+
+        return np.sum([np.product([xi.value for xi in x.get_shape()]) for x in tf.trainable_variables()])
+
     def train(self, image, label, params):
         '''Input: Image [batch_size, H, W, C]
                   Label [batch_size]
