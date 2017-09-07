@@ -18,7 +18,7 @@ train_data_params = {'data_path': 'data/cifar-10-batches-py/',
 dataset = dt.CIFAR10(train_data_params)
 
 params = {'batch_size': 125,
-          'feed_path': 'data/trained_weights/modelA/modelA_40e3_90.npy'}
+          'feed_path': 'data/saved_weights/modelA_momen_e1e2e3_150.npy'}
 
 # with tf.Session() as sess:
 with tf.Session(config=config_gpu) as sess:

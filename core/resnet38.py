@@ -200,8 +200,8 @@ class ResNet38:
         total_loss = entropy_loss + self._weight_decay(params['decay_rate'])
         update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
         with tf.control_dependencies(update_ops):
-            # default learning rate for Adam: 0.001
-            train_op = tf.train.AdamOptimizer(learning_rate=0.0001).minimize(total_loss)
+            # Momentum lr=0.1, momentum=0.9
+            train_op = tf.train.MomentumOptimizer(learning_rate=0.001, momentum=0.9).minimize(total_loss)
 
         return train_op, total_loss, train_acc, correct_preds
 
